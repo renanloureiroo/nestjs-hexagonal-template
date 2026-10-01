@@ -1,0 +1,7 @@
+dist/
+coverage/
+drizzle/
+node_modules/
+.specify/
+.claude/
+.agents/

@@ -1,0 +1,3 @@
+Marcador do template. Enquanto este arquivo existir, o workflow template-init
+renomeia o projeto no primeiro push (ver scripts/init-template.sh). O script o
+remove ao terminar.

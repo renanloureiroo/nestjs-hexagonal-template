@@ -1,0 +1,63 @@
+name: Template init
+
+# No repositório gerado por "Use this template", renomeia o projeto a partir do nome do
+# repositório no primeiro push. No próprio template, valida que a inicialização continua
+# produzindo um projeto que compila e passa nos testes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  init:
+    if: github.event_name == 'push' && github.event.repository.name != 'nestjs-hexagonal-template'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - id: marker
+        run: |
+          if [[ -f .template-init ]]; then
+            echo "pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pending=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Initialize project
+        if: steps.marker.outputs.pending == 'true'
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: scripts/init-template.sh "$REPOSITORY_NAME"
+      - name: Commit
+        if: steps.marker.outputs.pending == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: initialize project from template"
+          git push
+
+  verify-init:
+    if: github.event.repository.name == 'nestjs-hexagonal-template'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Initialize a sample project
+        run: scripts/init-template.sh orders-service
+      - name: No template name left behind
+        run: |
+          if git grep -n -E 'hexagonal[-_]template|Hexagonal Template' -- . ':!.github/workflows'; then
+            echo "O nome do template sobrou no projeto gerado." >&2
+            exit 1
+          fi
+      - run: npm ci
+      - name: Verify sample project
+        run: npm run verify

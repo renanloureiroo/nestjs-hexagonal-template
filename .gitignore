@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+### Local configuration ###
+.env
+.env.*
+!.env.example
+
+### IDEs ###
+.idea/
+.vscode/
+
+### Operating system ###
+.DS_Store
