@@ -102,7 +102,7 @@ declara uma porta. O passo a passo está em [docs/ARCHITECTURE.md](docs/ARCHITEC
 
 Os dois backends têm a mesma arquitetura, os mesmos contratos HTTP, os mesmos códigos de erro e
 os mesmos tipos de teste. O time escolhe a linguagem que domina sem abrir mão do desenho, e o app
-mobile lê os erros de qualquer um dos dois sem adaptação.
+mobile funciona com qualquer um dos dois sem mudar uma linha.
 
 ## Comece em um minuto
 
