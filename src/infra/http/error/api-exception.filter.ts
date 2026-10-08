@@ -77,8 +77,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
   private problemOf(failure: Failure, request: Request): ProblemDetailDTO {
     const traceId = this.currentTraceId();
+    // Sem `type`: a RFC 9457 assume about:blank quando ele falta, e o template Spring também
+    // o omite. Um type próprio só entra quando existir uma URI que documente o problema.
     return {
-      type: 'about:blank',
       title: STATUS_CODES[failure.status] ?? 'Error',
       status: failure.status,
       detail: failure.detail,

@@ -328,8 +328,8 @@ Regras da borda:
 - `try/catch` para traduzir erro no controller é proibido.
 
 Toda falha HTTP é produzida pelo `ApiExceptionFilter` em RFC 9457
-(`application/problem+json`), com `type`, `title`, `status`, `detail`,
-`instance`, `code` e, quando disponível, `traceId`. Falhas de validação acrescentam
+(`application/problem+json`), com `title`, `status`, `detail`, `instance`, `code`
+e, quando disponível, `traceId`. `type` é omitido: a RFC assume `about:blank` quando ele falta. Falhas de validação acrescentam
 `errors` com uma mensagem por campo. Erros inesperados viram
 `internal.unexpected` sem expor detalhes internos.
 

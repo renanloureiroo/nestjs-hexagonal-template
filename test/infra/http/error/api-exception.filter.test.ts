@@ -60,13 +60,12 @@ describe('ApiExceptionFilter', () => {
     [ErrorType.UNAUTHORIZED, 401],
     [ErrorType.FORBIDDEN, 403],
     [ErrorType.BUSINESS_RULE, 422],
-  ])('traduz %s para %i em RFC 9457', async (type, status) => {
+  ])('traduz %s para %i em RFC 9457, sem type about:blank', async (type, status) => {
     const response = await request(app.getHttpServer()).get(`/api/samples/application/${type}`);
 
     expect(response.status).toBe(status);
     expect(response.headers['content-type']).toMatch(/^application\/problem\+json/);
     expect(response.body).toEqual({
-      type: 'about:blank',
       title: expect.any(String),
       status,
       detail: 'Falha de exemplo',

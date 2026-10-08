@@ -12,7 +12,6 @@ export function problemExample(
   example: Pick<ProblemDetailDTO, 'status' | 'detail' | 'instance' | 'code' | 'errors'>,
 ): ProblemDetailDTO {
   return {
-    type: 'about:blank',
     title: STATUS_TITLES[example.status] ?? 'Error',
     ...example,
     traceId: '4bf92f3577b34da6a3ce929d0e0e4736',
