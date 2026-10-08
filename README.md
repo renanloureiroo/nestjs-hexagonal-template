@@ -167,6 +167,13 @@ curl -i -X POST http://localhost:8080/api/notes \
   -d '{"title":"Minha primeira nota"}'
 ```
 
+A listagem é paginada e devolve as notas mais recentes primeiro:
+
+```bash
+curl -s 'http://localhost:8080/api/notes?page=0&size=20'
+# {"items":[{"id":"…","title":"Minha primeira nota","createdAt":"…"}],"total":1}
+```
+
 ## Testes
 
 ```bash

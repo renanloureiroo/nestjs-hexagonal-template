@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
+import { Page } from '../../../../../../core/pagination/page.js';
+import { offsetOf, type PageQuery } from '../../../../../../core/pagination/page-query.js';
 import { Database } from '../../../../../../infra/database/database.js';
 import { NoteRepository } from '../../../../application/repositories/note-repository.js';
 import { type Note } from '../../../../domain/entities/note.js';
@@ -30,5 +32,16 @@ export class NoteRepositoryDrizzle extends NoteRepository {
       .where(eq(notes.id, id.value))
       .limit(1);
     return row === undefined ? null : NoteDrizzleMapper.toDomain(row);
+  }
+
+  async findPage(query: PageQuery): Promise<Page<Note>> {
+    const rows = await this.database.executor
+      .select()
+      .from(notes)
+      .orderBy(desc(notes.createdAt), desc(notes.id))
+      .limit(query.size)
+      .offset(offsetOf(query));
+    const total = await this.database.executor.$count(notes);
+    return new Page(rows.map(NoteDrizzleMapper.toDomain), total);
   }
 }

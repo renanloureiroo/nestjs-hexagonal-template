@@ -5,6 +5,7 @@ import { withTransactions } from '../../../../infra/transaction/with-transaction
 import { NoteRepository } from '../../application/repositories/note-repository.js';
 import { CreateNoteUseCase } from '../../application/usecases/create-note.use-case.js';
 import { GetNoteUseCase } from '../../application/usecases/get-note.use-case.js';
+import { ListNotesUseCase } from '../../application/usecases/list-notes.use-case.js';
 import { NoteRepositoryDrizzle } from '../database/drizzle/repositories/note-repository-drizzle.js';
 import { NoteCreatedListener } from '../events/note-created.listener.js';
 import { NoteController } from '../http/controllers/note.controller.js';
@@ -26,6 +27,11 @@ import { NoteController } from '../http/controllers/note.controller.js';
       provide: GetNoteUseCase,
       inject: [NoteRepository],
       useFactory: (notes: NoteRepository) => new GetNoteUseCase(notes),
+    },
+    {
+      provide: ListNotesUseCase,
+      inject: [NoteRepository],
+      useFactory: (notes: NoteRepository) => new ListNotesUseCase(notes),
     },
   ],
 })

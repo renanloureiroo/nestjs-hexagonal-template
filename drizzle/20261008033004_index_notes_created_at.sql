@@ -1,0 +1,1 @@
+CREATE INDEX "notes_created_at_id_idx" ON "notes" USING btree ("created_at" DESC NULLS LAST,"id" DESC NULLS LAST);

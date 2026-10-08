@@ -8,6 +8,13 @@
       "when": 1790820165126,
       "tag": "20261001020245_create_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791430204085,
+      "tag": "20261008033004_index_notes_created_at",
+      "breakpoints": true
     }
   ]
 }

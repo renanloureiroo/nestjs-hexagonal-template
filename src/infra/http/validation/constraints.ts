@@ -26,3 +26,33 @@ export function MaxChars(max: number, message: string): PropertyDecorator {
     { message },
   );
 }
+
+// Semântica de @Min sobre inteiro: ausência passa; texto, fração ou NaN não passam.
+export function IntMin(min: number, message: string): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'intMin',
+      constraints: [min],
+      validator: {
+        validate: (value: unknown) =>
+          value === undefined || (Number.isInteger(value) && (value as number) >= min),
+      },
+    },
+    { message },
+  );
+}
+
+// Semântica de @Max sobre inteiro, com as mesmas regras de ausência de IntMin.
+export function IntMax(max: number, message: string): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'intMax',
+      constraints: [max],
+      validator: {
+        validate: (value: unknown) =>
+          value === undefined || (Number.isInteger(value) && (value as number) <= max),
+      },
+    },
+    { message },
+  );
+}
