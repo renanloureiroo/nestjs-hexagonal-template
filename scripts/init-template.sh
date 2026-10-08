@@ -34,7 +34,7 @@ echo "Título da API:  $title API"
 files=()
 while IFS= read -r file; do
   files+=("$file")
-done < <(git ls-files | grep -vE '^(\.github/workflows/|\.specify/|\.claude/|\.agents/|scripts/init-template\.sh$|\.template-init$)')
+done < <(git ls-files | grep -vE '^(\.github/workflows/|\.github/readme/|\.specify/|\.claude/|\.agents/|scripts/init-template\.sh$|\.template-init$)')
 
 # Ordem importa: nomes mais longos antes dos mais curtos que eles contêm.
 for file in "${files[@]}"; do
@@ -50,5 +50,5 @@ done
 # Trechos que só fazem sentido no template deixam de existir no projeto gerado.
 perl -0pi -e 's/<!-- template:start -->.*?<!-- template:end -->\n\n?//gs' README.md
 
-git rm -q .template-init scripts/init-template.sh
+git rm -rq .template-init scripts/init-template.sh .github/readme
 echo "Pronto. Revise com 'git status' e rode npm install && npm run verify."
