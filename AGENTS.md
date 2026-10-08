@@ -10,6 +10,7 @@ Antes de alterar código, leia:
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/TESTS.md`](docs/TESTS.md)
+- [`docs/adr`](docs/adr/README.md), as decisões já tomadas e o porquê
 
 Regras essenciais:
 
@@ -20,4 +21,5 @@ Regras essenciais:
 - mocks sobre portas do projeto são proibidos;
 - erros HTTP seguem RFC 9457 e carregam `code` estável;
 - migrations aplicadas nunca são editadas;
+- decisão com alternativas relevantes ou custo duradouro ganha um ADR em `docs/adr`;
 - o portão de entrega é `npm run verify`.
