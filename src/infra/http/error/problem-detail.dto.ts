@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// Contrato RFC 9457 publicado no OpenAPI para toda resposta de erro.
+/** Contrato RFC 9457 publicado no OpenAPI para toda resposta de erro. */
 export class ProblemDetailDTO {
   @ApiPropertyOptional({ description: 'URI do tipo de problema; omitido quando é about:blank' })
   type?: string;

@@ -14,7 +14,7 @@ import { NoteResponseDTO } from '../dtos/note-response.dto.js';
 
 const NOTE_ID = 'f59dd6bb-e086-4fe9-a382-a00f8796d260';
 
-// Contrato OpenAPI fora do controller, no papel da interface *Swagger do template Java.
+/** Contrato OpenAPI fora do controller, no papel da interface *Swagger do template Java. */
 export const NoteControllerSwagger = {
   controller: () => applyDecorators(ApiTags('notes')),
 

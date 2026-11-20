@@ -1,4 +1,4 @@
-// Captura o erro lançado para que o teste afirme `type` e `code`, nunca a mensagem.
+/** Captura o erro lançado para que o teste afirme `type` e `code`, nunca a mensagem. */
 export function captureError(work: () => unknown): unknown {
   try {
     work();

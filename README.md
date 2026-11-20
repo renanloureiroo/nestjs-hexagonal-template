@@ -57,17 +57,18 @@ abre o trace da requisição no Grafana que o `npm run dev` sobe junto com a API
 
 ## O que vem pronto
 
-| Área            | Escolha                                                                |
-| --------------- | ---------------------------------------------------------------------- |
-| Runtime         | Node.js 24 LTS, ESM e TypeScript estrito                               |
-| Framework       | NestJS 12 sobre Express, class-validator e `@nestjs/swagger`           |
-| Persistência    | PostgreSQL, Drizzle ORM e migrations SQL do drizzle-kit                |
-| Eventos         | `@nestjs/event-emitter`, entregues depois do commit                    |
-| Observabilidade | OpenTelemetry com auto-instrumentação e Grafana LGTM no Docker Compose |
-| Testes          | Vitest, Supertest e Testcontainers                                     |
-| Qualidade       | ESLint com regras de arquitetura, Prettier e CI no GitHub Actions      |
-| Entrega         | Dockerfile e health check                                              |
-| Documentação    | arquitetura, estratégia de testes, ADRs e `AGENTS.md`                  |
+| Área            | Escolha                                                                  |
+| --------------- | ------------------------------------------------------------------------ |
+| Runtime         | Node.js 24 LTS, ESM e TypeScript estrito                                 |
+| Framework       | NestJS 12 sobre Express, class-validator e `@nestjs/swagger`             |
+| Persistência    | PostgreSQL, Drizzle ORM e migrations SQL do drizzle-kit                  |
+| Eventos         | `@nestjs/event-emitter`, entregues depois do commit                      |
+| Observabilidade | OpenTelemetry com auto-instrumentação e Grafana LGTM no Docker Compose   |
+| Testes          | Vitest, Supertest e Testcontainers                                       |
+| Identidade      | header do gateway ou JWT validado por JWKS, escolhido por variável       |
+| Qualidade       | ESLint com regras de arquitetura e de documentação, Prettier e CI        |
+| Entrega         | Dockerfile com imagem fixada por digest, estágio dev e health com versão |
+| Documentação    | arquitetura, estratégia de testes, ADRs e `AGENTS.md`                    |
 
 ## Arquitetura em 30 segundos
 
@@ -202,8 +203,15 @@ O arquivo gerado em `drizzle/` é versionado e nunca editado depois de aplicado.
 docker build -t nestjs-hexagonal-template .
 ```
 
-A imagem lê `DATABASE_URL`, `PORT`, `API_DOCS_ENABLED`, `LOG_LEVEL` e as variáveis
-`OTEL_*` do ambiente.
+A imagem lê `DATABASE_URL`, `PORT`, `API_DOCS_ENABLED`, `LOG_LEVEL`, as variáveis de identidade
+(`IDENTITY_MODE` e as `JWT_*`, ver `.env.example`) e as `OTEL_*` do ambiente. O build aceita
+`--build-arg APP_VERSION=<tag>`, que o `/api/health` devolve.
+
+Para desenvolver dentro do container, com hot reload e o debugger na porta 9229:
+
+```bash
+docker build --target dev -t nestjs-hexagonal-template:dev .
+```
 
 <!-- template:start -->
 

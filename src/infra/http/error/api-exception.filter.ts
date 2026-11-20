@@ -10,11 +10,23 @@ import {
 import { trace } from '@opentelemetry/api';
 import { type Request, type Response } from 'express';
 import { ApplicationError } from '../../../core/error/application-error.js';
+import { loggableError } from '../../database/loggable-error.js';
 import { InvalidRequestError } from '../validation/invalid-request.error.js';
 import { httpStatusOf } from './error-type-http-status.js';
 import { type ProblemDetailDTO } from './problem-detail.dto.js';
 
 const VALIDATION_CODE = 'request.invalid';
+/** Membros padrão do problema: um detail do erro nunca os sobrescreve nem os injeta. */
+const RESERVED_MEMBERS = [
+  'type',
+  'title',
+  'status',
+  'detail',
+  'instance',
+  'code',
+  'traceId',
+  'errors',
+];
 const ROUTE_NOT_FOUND_CODE = 'request.not_found';
 const UNEXPECTED_CODE = 'internal.unexpected';
 
@@ -30,9 +42,11 @@ interface Failure {
   readonly detail: string;
   readonly code: string;
   readonly errors?: Record<string, string>;
+  /** Membros de extensão RFC 9457 (§3.2), vindos de ApplicationError.details. */
+  readonly extensions?: Readonly<Record<string, unknown>>;
 }
 
-// Toda falha HTTP sai daqui, em RFC 9457 e com `code` estável. Controllers nunca traduzem erro.
+/** Toda falha HTTP sai daqui, em RFC 9457 e com `code` estável. Controllers nunca traduzem erro. */
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
   private static readonly logger = new Logger(ApiExceptionFilter.name);
@@ -54,7 +68,12 @@ export class ApiExceptionFilter implements ExceptionFilter {
   private failureOf(error: unknown): Failure {
     if (error instanceof ApplicationError) {
       ApiExceptionFilter.logger.log(`Erro de aplicação [${error.code}] ${error.message}`);
-      return { status: httpStatusOf(error.type), detail: error.message, code: error.code };
+      return {
+        status: httpStatusOf(error.type),
+        detail: error.message,
+        code: error.code,
+        ...(error.details !== undefined && { extensions: error.details }),
+      };
     }
     if (error instanceof InvalidRequestError) {
       return {
@@ -67,7 +86,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
     if (error instanceof HttpException && error.getStatus() < 500) {
       return frameworkFailureOf(error.getStatus());
     }
-    ApiExceptionFilter.logger.error('Erro inesperado ao processar a requisição', error);
+    ApiExceptionFilter.logger.error(
+      'Erro inesperado ao processar a requisição',
+      loggableError(error),
+    );
     return {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       detail: 'Erro inesperado ao processar a requisição',
@@ -75,11 +97,15 @@ export class ApiExceptionFilter implements ExceptionFilter {
     };
   }
 
+  /**
+   * Sem `type`: a RFC 9457 assume about:blank quando ele falta, e o template Spring também o omite.
+   * Um type próprio só entra quando existir uma URI que documente o problema. Extensões vêm antes:
+   * os membros padrão nunca são sobrescritos por um detail do erro.
+   */
   private problemOf(failure: Failure, request: Request): ProblemDetailDTO {
     const traceId = this.currentTraceId();
-    // Sem `type`: a RFC 9457 assume about:blank quando ele falta, e o template Spring também
-    // o omite. Um type próprio só entra quando existir uma URI que documente o problema.
     return {
+      ...extensionsOf(failure),
       title: STATUS_CODES[failure.status] ?? 'Error',
       status: failure.status,
       detail: failure.detail,
@@ -91,9 +117,17 @@ export class ApiExceptionFilter implements ExceptionFilter {
   }
 }
 
-// Falhas detectadas pelo próprio Nest antes do controller. JSON malformado e path com
-// encoding inválido chegam como BadRequestException carregando a mensagem do parser, que
-// nunca é repassada ao cliente.
+function extensionsOf(failure: Failure): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(failure.extensions ?? {}).filter(([key]) => !RESERVED_MEMBERS.includes(key)),
+  );
+}
+
+/**
+ * Falhas detectadas pelo próprio Nest antes do controller. JSON malformado e path com encoding
+ * inválido chegam como BadRequestException carregando a mensagem do parser, que nunca é repassada
+ * ao cliente.
+ */
 function frameworkFailureOf(status: number): Failure {
   if (status === HttpStatus.NOT_FOUND) {
     return { status, detail: 'Recurso não encontrado', code: ROUTE_NOT_FOUND_CODE };

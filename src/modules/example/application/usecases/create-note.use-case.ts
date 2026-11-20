@@ -1,4 +1,5 @@
 import { type DomainEventPublisher } from '../../../../core/event/domain-event-publisher.js';
+import { type Clock } from '../../../../core/time/clock.js';
 import { Transactional } from '../../../../core/transaction/transactional.js';
 import { type UseCase } from '../../../../core/usecase/use-case.js';
 import { Note } from '../../domain/entities/note.js';
@@ -19,11 +20,12 @@ export class CreateNoteUseCase implements UseCase<CreateNoteInput, CreateNoteOut
   constructor(
     private readonly notes: NoteRepository,
     private readonly events: DomainEventPublisher,
+    private readonly clock: Clock,
   ) {}
 
   @Transactional()
   async execute(input: CreateNoteInput): Promise<CreateNoteOutput> {
-    const note = Note.create(NoteTitle.of(input.title));
+    const note = Note.create(NoteTitle.of(input.title), this.clock.now());
     const saved = await this.notes.save(note);
     await this.events.publish(note.pullDomainEvents());
     return outputOf(saved);

@@ -4,8 +4,10 @@ import { DomainEventPublisher } from '../../core/event/domain-event-publisher.js
 import { type DomainEvent } from '../../core/event/domain-event.js';
 import { Database } from '../database/database.js';
 
-// Listeners recebem o evento somente após o commit, como @TransactionalEventListener(AFTER_COMMIT).
-// Um rollback descarta os eventos.
+/**
+ * Listeners recebem o evento somente após o commit, como @TransactionalEventListener(AFTER_COMMIT).
+ * Um rollback descarta os eventos.
+ */
 @Injectable()
 export class EventEmitterDomainEventPublisher extends DomainEventPublisher {
   constructor(

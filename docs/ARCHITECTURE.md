@@ -211,11 +211,18 @@ Famílias iniciais:
 | `UNAUTHORIZED`  | identidade ausente ou inválida |  401 |
 | `FORBIDDEN`     | identidade sem permissão       |  403 |
 | `BUSINESS_RULE` | regra de negócio violada       |  422 |
+| `GONE`          | recurso existiu e não volta    |  410 |
+| `UNAVAILABLE`   | dependência fora do ar         |  503 |
 
 `ErrorType` é um objeto `as const` com tipo união, não um `enum`. A conversão
 para status mora exclusivamente em `infra/http/error/error-type-http-status.ts`;
 o mapa é um `Record<ErrorType, HttpStatus>`, então um tipo novo não compila até
 ganhar seu status.
+
+Um erro pode levar `details`: dados legíveis por máquina que o filtro HTTP espalha no problema
+como membros de extensão da RFC 9457 (§3.2), ao lado de `code`. Os membros padrão (`type`,
+`title`, `status`, `detail`, `instance`, `code`, `traceId`, `errors`) nunca são sobrescritos por
+um detail.
 
 Erro recorrente ganha uma classe nomeada em `application/errors` e carrega o
 dado útil à borda, não apenas uma mensagem (`NoteNotFoundError.noteId`).
@@ -334,7 +341,40 @@ e, quando disponível, `traceId`. `type` é omitido: a RFC assume `about:blank` 
 `internal.unexpected` sem expor detalhes internos.
 
 `configureApp` em `infra/http/configure-app.ts` é a única configuração da borda e
-é usada tanto pelo `main.ts` quanto pelo E2E.
+é usada tanto pelo `main.ts` quanto pelo E2E. O parser JSON aceita também
+`application/merge-patch+json` (RFC 7396), para `PATCH` parcial.
+
+### Identidade
+
+Quem chama a API vem da porta `IdentityResolver` (`infra/http/identity`), com dois adaptadores
+escolhidos por `IDENTITY_MODE` ([ADR 0002](adr/0002-identidade-plugavel-por-gateway-ou-jwt.md)):
+
+- `gateway`: o sujeito vem do header que o gateway sempre sobrescreve (`IDENTITY_SUBJECT_HEADER`);
+- `jwt`: o `Authorization: Bearer` é validado aqui, pelo JWKS do provedor (`JWT_JWKS_URL`,
+  `JWT_ISSUER` e, quando o provedor usa, `JWT_AUDIENCE` e `JWT_AUTHORIZED_PARTIES`).
+
+```ts
+@RequiresIdentity()
+@Controller('me')
+export class MeController {
+  @Get()
+  get(@AuthenticatedIdentity() identity: RequestIdentity) {
+    return this.getMe.execute({ subject: identity.subject });
+  }
+}
+```
+
+O guard roda antes do pipe de validação: sem identidade, `401` com `auth.unauthenticated`, mesmo
+com corpo inválido. Caso de uso recebe o `subject` no `Input` e nunca lê header ou claim.
+
+### Health
+
+- `GET /api/health/live`: liveness, sem tocar o banco, para o healthcheck do container. Um banco
+  serverless que dorme sem uso continua dormindo.
+- `GET /api/health`: readiness com `select 1` no banco, para o deploy.
+
+Os dois devolvem `{ status, version }`, com a versão de `APP_VERSION` (a tag da imagem), para o
+deploy saber quando a versão nova está no ar.
 
 ## 9. Fluxo ponta a ponta
 
@@ -377,7 +417,12 @@ listener é registrada e não desfaz a resposta, porque o commit já aconteceu.
 - erro é logado uma vez, na borda;
 - estado de requisição não usa variável de módulo; contexto por requisição usa
   `AsyncLocalStorage`;
-- código síncrono pesado não roda no event loop de requisição.
+- código síncrono pesado não roda no event loop de requisição;
+- falha de consulta do Drizzle passa por `loggableError` antes do log: os parâmetros da consulta e
+  a linha do PostgreSQL nunca vão para o log;
+- conexão ociosa derrubada pelo banco é registrada e descartada pelo pool, sem derrubar o processo;
+- tempo vem da porta `Clock` (`core/time`), nunca de `new Date()` em caso de uso ou domínio; o
+  teste usa `FixedClock`.
 
 OpenTelemetry é carregado por `node --import ./dist/instrumentation.js` antes da
 aplicação. Exportadores e endpoint são configurados pelas variáveis `OTEL_*`
@@ -407,7 +452,8 @@ Correção de bug começa por um teste que reproduz o defeito.
 - mensagens de erro, descrições OpenAPI e nomes de teste em português;
 - Prettier aplicado pelo editor (`npm run format`), sem portão no `verify`;
 - `any` é proibido; `unknown` com estreitamento explícito quando o tipo é aberto;
-- comentários explicam decisões e alternativas descartadas, não a assinatura;
+- sem comentários `//` ou `/* */`: só JSDoc ligado a uma declaração, e referência a spec ou ADR
+  só em JSDoc ([ADR 0001](adr/0001-documentar-o-codigo-so-com-jsdoc.md));
 - abstração nova somente quando o segundo caso concreto a exigir.
 
 ## 13. Checklist de arquitetura
@@ -429,7 +475,7 @@ Correção de bug começa por um teste que reproduz o defeito.
 Não devem ser inventadas antes do primeiro caso concreto:
 
 - contextos de negócio e agregados;
-- autenticação e autorização;
+- autorização (a autenticação está no [ADR 0002](adr/0002-identidade-plugavel-por-gateway-ou-jwt.md));
 - integrações externas;
 - estratégia durável para eventos externos, como outbox;
 - trava de migration para várias réplicas subindo ao mesmo tempo;

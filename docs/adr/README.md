@@ -41,6 +41,7 @@ anterior; no antigo, só o status muda para **Substituído por NNNN**.
 
 ## Índice
 
-| ADR | Título                            | Status |
-| --- | --------------------------------- | ------ |
-| —   | Nenhuma decisão registrada ainda. | —      |
+| ADR                                                    | Título                                                 | Status |
+| ------------------------------------------------------ | ------------------------------------------------------ | ------ |
+| [0001](0001-documentar-o-codigo-so-com-jsdoc.md)       | Documentar o código só com JSDoc                       | Aceito |
+| [0002](0002-identidade-plugavel-por-gateway-ou-jwt.md) | Identidade plugável: header do gateway ou JWT por JWKS | Aceito |

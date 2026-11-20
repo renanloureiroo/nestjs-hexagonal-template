@@ -1,8 +1,10 @@
 import { sql } from 'drizzle-orm';
 import { type Database } from '../../../src/infra/database/database.js';
 
-// Descobre as tabelas pelo catálogo do PostgreSQL; o histórico de migrations do Drizzle vive
-// no schema `drizzle` e fica de fora. Nenhuma ordem de chave estrangeira é codificada.
+/**
+ * Descobre as tabelas pelo catálogo do PostgreSQL; o histórico de migrations do Drizzle vive no
+ * schema `drizzle` e fica de fora. Nenhuma ordem de chave estrangeira é codificada.
+ */
 export class DatabaseCleaner {
   private tables: string[] | undefined;
 
