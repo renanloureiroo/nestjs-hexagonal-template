@@ -23,5 +23,5 @@
     "declaration": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "test", "*.ts"]
+  "include": ["src", "test", "eslint", "*.ts"]
 }

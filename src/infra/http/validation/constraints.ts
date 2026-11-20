@@ -1,6 +1,6 @@
 import { ValidateBy } from 'class-validator';
 
-// Semântica de @NotBlank: rejeita ausência, vazio, apenas espaços e valores que não são texto.
+/** Semântica de @NotBlank: rejeita ausência, vazio, apenas espaços e valores que não são texto. */
 export function NotBlank(message: string): PropertyDecorator {
   return ValidateBy(
     {
@@ -13,7 +13,7 @@ export function NotBlank(message: string): PropertyDecorator {
   );
 }
 
-// Semântica de @Size(max): ausência não é responsabilidade desta constraint.
+/** Semântica de @Size(max): ausência não é responsabilidade desta constraint. */
 export function MaxChars(max: number, message: string): PropertyDecorator {
   return ValidateBy(
     {
@@ -27,7 +27,21 @@ export function MaxChars(max: number, message: string): PropertyDecorator {
   );
 }
 
-// Semântica de @Min sobre inteiro: ausência passa; texto, fração ou NaN não passam.
+/** Texto com pelo menos `min` caracteres. Ausência não é responsabilidade desta constraint. */
+export function MinChars(min: number, message: string): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'minChars',
+      constraints: [min],
+      validator: {
+        validate: (value: unknown) => typeof value !== 'string' || value.length >= min,
+      },
+    },
+    { message },
+  );
+}
+
+/** Semântica de @Min sobre inteiro: ausência passa; texto, fração ou NaN não passam. */
 export function IntMin(min: number, message: string): PropertyDecorator {
   return ValidateBy(
     {
@@ -42,7 +56,7 @@ export function IntMin(min: number, message: string): PropertyDecorator {
   );
 }
 
-// Semântica de @Max sobre inteiro, com as mesmas regras de ausência de IntMin.
+/** Semântica de @Max sobre inteiro, com as mesmas regras de ausência de IntMin. */
 export function IntMax(max: number, message: string): PropertyDecorator {
   return ValidateBy(
     {
@@ -51,6 +65,20 @@ export function IntMax(max: number, message: string): PropertyDecorator {
       validator: {
         validate: (value: unknown) =>
           value === undefined || (Number.isInteger(value) && (value as number) <= max),
+      },
+    },
+    { message },
+  );
+}
+
+/** Texto sem espaço nas pontas. Ausência e vazio ficam para `NotBlank`. */
+export function NoSurroundingSpaces(message: string): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'noSurroundingSpaces',
+      validator: {
+        validate: (value: unknown) =>
+          typeof value !== 'string' || value.trim() === '' || value === value.trim(),
       },
     },
     { message },

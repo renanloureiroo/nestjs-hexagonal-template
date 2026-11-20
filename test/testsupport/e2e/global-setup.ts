@@ -9,7 +9,7 @@ declare module 'vitest' {
   }
 }
 
-// Um único PostgreSQL por execução, compartilhado por todos os arquivos E2E.
+/** Um único PostgreSQL por execução, compartilhado por todos os arquivos E2E. */
 export default async function setup(project: TestProject): Promise<() => Promise<void>> {
   if (!(await dockerAvailable())) {
     console.warn('Docker indisponível: testes E2E serão ignorados.');

@@ -23,7 +23,7 @@ export abstract class Id {
     return UUID_PATTERN.test(value);
   }
 
-  // Igualdade por tipo concreto: um NoteId nunca é igual a outro tipo de Id com o mesmo valor.
+  /** Igualdade por tipo concreto: um NoteId nunca é igual a outro tipo de Id com o mesmo valor. */
   equals(other: unknown): boolean {
     return (
       other instanceof Id && other.constructor === this.constructor && other.value === this.value

@@ -8,7 +8,7 @@ export const NoteDrizzleMapper = {
     return { id: note.id.value, title: note.title.value, createdAt: note.createdAt };
   },
 
-  // Reconstrução sempre por restore: o objeto não nasce agora e não registra eventos.
+  /** Reconstrução sempre por restore: o objeto não nasce agora e não registra eventos. */
   toDomain(row: NoteRow): Note {
     return Note.restore(NoteId.of(row.id), NoteTitle.of(row.title), row.createdAt);
   },

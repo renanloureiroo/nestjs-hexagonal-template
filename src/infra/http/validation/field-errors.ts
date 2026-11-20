@@ -1,6 +1,6 @@
 import { type ValidationError } from 'class-validator';
 
-// Uma mensagem por campo, com caminho pontuado para objetos aninhados.
+/** Uma mensagem por campo, com caminho pontuado para objetos aninhados. */
 export function fieldErrorsOf(
   errors: readonly ValidationError[],
   prefix = '',

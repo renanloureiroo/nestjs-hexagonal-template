@@ -4,7 +4,7 @@ import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 type Transaction = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
-// Executor é o que os adaptadores usam: a transação corrente, se houver, ou o pool.
+/** Executor é o que os adaptadores usam: a transação corrente, se houver, ou o pool. */
 export type Executor = NodePgDatabase | Transaction;
 
 interface TransactionContext {
@@ -12,8 +12,10 @@ interface TransactionContext {
   readonly afterCommit: Array<() => Promise<void>>;
 }
 
-// Propaga a transação pelo AsyncLocalStorage, como o Spring faz por thread. Adaptadores não
-// recebem a transação por parâmetro e casos de uso não sabem que ela existe.
+/**
+ * Propaga a transação pelo AsyncLocalStorage, como o Spring faz por thread. Adaptadores não recebem
+ * a transação por parâmetro e casos de uso não sabem que ela existe.
+ */
 export class Database {
   private static readonly logger = new Logger(Database.name);
 
@@ -29,7 +31,7 @@ export class Database {
     return this.storage.getStore() !== undefined;
   }
 
-  // Propagação REQUIRED: uma transação aninhada participa da transação externa.
+  /** Propagação REQUIRED: uma transação aninhada participa da transação externa. */
   async transaction<T>(work: () => Promise<T>): Promise<T> {
     if (this.inTransaction) {
       return work();
@@ -40,7 +42,7 @@ export class Database {
     return result;
   }
 
-  // Sem transação ativa, o callback executa imediatamente: não há commit a esperar.
+  /** Sem transação ativa, o callback executa imediatamente: não há commit a esperar. */
   async afterCommit(callback: () => Promise<void>): Promise<void> {
     const context = this.storage.getStore();
     if (context === undefined) {
@@ -50,7 +52,7 @@ export class Database {
     context.afterCommit.push(callback);
   }
 
-  // O commit já aconteceu: falha de um callback é registrada e não desfaz a resposta.
+  /** O commit já aconteceu: falha de um callback é registrada e não desfaz a resposta. */
   private async runAfterCommit(callbacks: Array<() => Promise<void>>): Promise<void> {
     for (const callback of callbacks) {
       await callback().catch((error: unknown) =>

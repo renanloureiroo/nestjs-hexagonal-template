@@ -1,8 +1,10 @@
 import { transactionalMethodsOf } from '../../core/transaction/transactional.js';
 import { type Transactor } from '../../core/transaction/transactor.js';
 
-// Equivalente ao advisor AOP do Spring: envolve em transação cada método marcado com
-// @Transactional(). O objeto devolvido continua sendo instância da classe original.
+/**
+ * Equivalente ao advisor AOP do Spring: envolve em transação cada método marcado com
+ * @Transactional(). O objeto devolvido continua sendo instância da classe original.
+ */
 export function withTransactions<T extends object>(target: T, transactor: Transactor): T {
   const methods = transactionalMethodsOf(target);
   if (methods.size === 0) {

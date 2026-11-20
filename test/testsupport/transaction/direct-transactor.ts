@@ -1,6 +1,6 @@
 import { Transactor } from '../../../src/core/transaction/transactor.js';
 
-// Executa o trabalho diretamente e registra a sequência begin → commit/rollback.
+/** Executa o trabalho diretamente e registra a sequência begin → commit/rollback. */
 export class DirectTransactor extends Transactor {
   private readonly log: string[] = [];
 

@@ -21,5 +21,8 @@ Regras essenciais:
 - mocks sobre portas do projeto são proibidos;
 - erros HTTP seguem RFC 9457 e carregam `code` estável;
 - migrations aplicadas nunca são editadas;
+- código sem comentários `//` ou `/* */`: só JSDoc em declarações, e referência a spec, requisito
+  ou ADR só em JSDoc (`@see`);
+- tempo vem da porta `Clock`, nunca de `new Date()` no núcleo;
 - decisão com alternativas relevantes ou custo duradouro ganha um ADR em `docs/adr`;
 - o portão de entrega é `npm run verify`.

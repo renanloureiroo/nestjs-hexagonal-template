@@ -12,7 +12,7 @@ export class NoteCreatedListener {
     .getMeter('example')
     .createCounter(NoteCreatedListener.METRIC_NAME);
 
-  // Executado somente após o commit da transação que criou a nota.
+  /** Executado somente após o commit da transação que criou a nota. */
   @OnEvent(NoteCreated.NAME, { async: true, promisify: true })
   on(event: NoteCreated): void {
     this.createdNotes.add(1);

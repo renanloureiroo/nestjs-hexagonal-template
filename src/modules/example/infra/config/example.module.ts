@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DomainEventPublisher } from '../../../../core/event/domain-event-publisher.js';
+import { Clock } from '../../../../core/time/clock.js';
 import { Transactor } from '../../../../core/transaction/transactor.js';
 import { withTransactions } from '../../../../infra/transaction/with-transactions.js';
 import { NoteRepository } from '../../application/repositories/note-repository.js';
@@ -10,8 +11,10 @@ import { NoteRepositoryDrizzle } from '../database/drizzle/repositories/note-rep
 import { NoteCreatedListener } from '../events/note-created.listener.js';
 import { NoteController } from '../http/controllers/note.controller.js';
 
-// Cabeamento explícito, no papel do UseCasesConfiguration com @Bean: os casos de uso são
-// classes puras, sem @Injectable.
+/**
+ * Cabeamento explícito, no papel do UseCasesConfiguration com @Bean: os casos de uso são classes
+ * puras, sem @Injectable.
+ */
 @Module({
   controllers: [NoteController],
   providers: [
@@ -19,9 +22,13 @@ import { NoteController } from '../http/controllers/note.controller.js';
     NoteCreatedListener,
     {
       provide: CreateNoteUseCase,
-      inject: [NoteRepository, DomainEventPublisher, Transactor],
-      useFactory: (notes: NoteRepository, events: DomainEventPublisher, transactor: Transactor) =>
-        withTransactions(new CreateNoteUseCase(notes, events), transactor),
+      inject: [NoteRepository, DomainEventPublisher, Clock, Transactor],
+      useFactory: (
+        notes: NoteRepository,
+        events: DomainEventPublisher,
+        clock: Clock,
+        transactor: Transactor,
+      ) => withTransactions(new CreateNoteUseCase(notes, events, clock), transactor),
     },
     {
       provide: GetNoteUseCase,

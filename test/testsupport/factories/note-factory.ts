@@ -19,7 +19,7 @@ export class NoteFactory {
     return this;
   }
 
-  // Instante fixo reconstrói a nota com restore, como se viesse do banco.
+  /** Instante fixo reconstrói a nota com restore, como se viesse do banco. */
   withCreatedAt(createdAt: Date | string): this {
     this.fixedCreatedAt = new Date(createdAt);
     return this;
@@ -29,7 +29,7 @@ export class NoteFactory {
     if (this.fixedCreatedAt !== null) {
       return Note.restore(NoteId.generate(), NoteTitle.of(this.title), this.fixedCreatedAt);
     }
-    return Note.create(NoteTitle.of(this.title));
+    return Note.create(NoteTitle.of(this.title), new Date('2026-01-01T12:00:00.000Z'));
   }
 
   buildSavedIn(notes: NoteRepository): Promise<Note> {

@@ -1,20 +1,22 @@
 import { metrics } from '@opentelemetry/api';
 import { MeterProvider, MetricReader } from '@opentelemetry/sdk-metrics';
 
-// Leitor em memória: o E2E observa métricas sem exportador nem container de observabilidade.
+/** Leitor em memória: o E2E observa métricas sem exportador nem container de observabilidade. */
 class InMemoryMetricReader extends MetricReader {
   protected override async onForceFlush(): Promise<void> {}
 
   protected override async onShutdown(): Promise<void> {}
 }
 
-// O setupFile roda antes de cada arquivo, mas a API do OpenTelemetry aceita um único
-// MeterProvider global. O leitor vive em globalThis para que todos os arquivos consultem o
-// mesmo leitor que foi registrado.
+/**
+ * O setupFile roda antes de cada arquivo, mas a API do OpenTelemetry aceita um único MeterProvider
+ * global. O leitor vive em globalThis para que todos os arquivos consultem o mesmo leitor que foi
+ * registrado.
+ */
 const READER = Symbol.for('app.test-metric-reader');
 const registry = globalThis as { [READER]?: InMemoryMetricReader };
 
-// Precisa acontecer antes de a aplicação criar seus instrumentos; por isso é um setupFile.
+/** Precisa acontecer antes de a aplicação criar seus instrumentos; por isso é um setupFile. */
 const reader = (registry[READER] ??= register(new InMemoryMetricReader()));
 
 function register(created: InMemoryMetricReader): InMemoryMetricReader {

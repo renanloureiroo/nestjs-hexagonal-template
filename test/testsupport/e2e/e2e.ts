@@ -16,19 +16,29 @@ export interface E2EContext {
 
 let context: Promise<E2EContext> | undefined;
 
-// Equivalente ao @E2E: suíte com tag própria, ignorada sem Docker.
+/** Equivalente ao @E2E: suíte com tag própria, ignorada sem Docker. */
 export const describeE2E = describe.skipIf(!inject('dockerAvailable'));
 
-// A aplicação sobe uma vez por execução e é reaproveitada por todos os arquivos E2E
-// (o projeto e2e roda sem isolamento), como o cache de contexto do Spring.
+/**
+ * A aplicação sobe uma vez por execução e é reaproveitada por todos os arquivos E2E (o projeto e2e
+ * roda sem isolamento), como o cache de contexto do Spring.
+ */
 export function e2e(): Promise<E2EContext> {
   context ??= start();
   return context;
 }
 
+/** Versão da imagem no E2E, para o health provar que lê `APP_VERSION`. */
+export const E2E_APP_VERSION = 'sha-e2e000000000';
+
+/** Servidor real em porta livre: serialização, validação e transação como em produção. */
+const ANY_FREE_PORT = 0;
+
 async function start(): Promise<E2EContext> {
   process.env.DATABASE_URL = inject('databaseUrl');
   process.env.API_DOCS_ENABLED = 'true';
+  process.env.APP_VERSION = E2E_APP_VERSION;
+  process.env.IDENTITY_MODE = 'gateway';
   process.env.LOG_LEVEL ??= 'warn';
   const environment = loadEnvironment();
 
@@ -37,8 +47,7 @@ async function start(): Promise<E2EContext> {
     logger: environment.logLevels,
   });
   configureApp(app, environment);
-  // Servidor real em porta livre: serialização, validação e transação como em produção.
-  await app.listen(0);
+  await app.listen(ANY_FREE_PORT);
 
   const database = app.get(Database);
   return { app, database, cleaner: new DatabaseCleaner(database) };

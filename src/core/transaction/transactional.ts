@@ -1,5 +1,7 @@
-// Marca a intenção transacional no caso de uso sem depender de framework. A infraestrutura
-// lê a marca e envolve o método em uma transação (ver infra/transaction/with-transactions.ts).
+/**
+ * Marca a intenção transacional no caso de uso sem depender de framework. A infraestrutura lê a
+ * marca e envolve o método em uma transação (ver infra/transaction/with-transactions.ts).
+ */
 const TRANSACTIONAL_METHODS = Symbol.for('app.transactional-methods');
 
 type Marked = { [TRANSACTIONAL_METHODS]?: Set<string | symbol> };

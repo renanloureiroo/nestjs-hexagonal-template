@@ -2,12 +2,16 @@ import { type ProblemDetailDTO } from './problem-detail.dto.js';
 
 const STATUS_TITLES: Record<number, string> = {
   400: 'Bad Request',
+  401: 'Unauthorized',
+  403: 'Forbidden',
   404: 'Not Found',
   409: 'Conflict',
+  410: 'Gone',
   422: 'Unprocessable Entity',
+  503: 'Service Unavailable',
 };
 
-// Exemplo RFC 9457 por resposta no OpenAPI: cada status mostra o code que ele realmente produz.
+/** Exemplo RFC 9457 por resposta no OpenAPI: cada status mostra o code que ele realmente produz. */
 export function problemExample(
   example: Pick<ProblemDetailDTO, 'status' | 'detail' | 'instance' | 'code' | 'errors'>,
 ): ProblemDetailDTO {

@@ -13,8 +13,8 @@ export class Note extends AggregateRoot<NoteId> {
     this.createdAt = createdAt;
   }
 
-  static create(title: NoteTitle): Note {
-    const note = new Note(NoteId.generate(), title, new Date());
+  static create(title: NoteTitle, createdAt: Date): Note {
+    const note = new Note(NoteId.generate(), title, createdAt);
     note.registerEvent(new NoteCreated(note.id, note.createdAt));
     return note;
   }
